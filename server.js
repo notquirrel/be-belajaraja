@@ -2,6 +2,9 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 
+require('dotenv').config();
+const mongoString = process.env.MONGO_URI
+
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -12,7 +15,7 @@ app.use(express.json())
 // mongoose.connect('mongodb+srv://gdc:23jLzhk2oYr0c9PE@belajaraja.ibkfhzp.mongodb.net/?retryWrites=true&w=majority&appName=belajarAja')
 //       .then(() => console.log('Connected to MongoDB'))
 //       .catch(err => console.error('Could not connect to MongoDB:', err));
-mongoose.connect('mongodb://daffa:QPS8PYTfveJ5WNmZ@ac-cdnhfwk-shard-00-00.nftqbht.mongodb.net:27017,ac-cdnhfwk-shard-00-01.nftqbht.mongodb.net:27017,ac-cdnhfwk-shard-00-02.nftqbht.mongodb.net:27017/belajaraja?ssl=true&replicaSet=atlas-12mw8f-shard-0&authSource=admin&retryWrites=true&w=majority')
+mongoose.connect(mongoString)
       .then(() => console.log('Connected to MongoDB'))
       .catch(err => console.error('Could not connect to MongoDB:', err));
 
