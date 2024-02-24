@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
       username: {
             type: String,
             required: true
@@ -29,7 +29,7 @@ userSchema.static('register', async function (username, email, password) {
             throw Error("Email is not valid")
       }
       if (!validator.isStrongPassword(password)) {
-            throw Error("Password not strong enpough")
+            throw Error("Password not strong enough")
       }
 
       const exists = await this.findOne({ email })
