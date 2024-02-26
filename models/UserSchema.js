@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 const bcrypt = require('bcryptjs');
 const validator = require('validator')
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
       username: {
             type: String,
             required: true
@@ -16,7 +16,12 @@ const userSchema = new mongoose.Schema({
       password: {
             type: String,
             required: true
-      }
+      },
+      role: {
+            type: String,
+            enum: ['mentor', 'user'],
+            default: 'user'
+        }
 })
 // registrations
 userSchema.static('register', async function (username, email, password) {

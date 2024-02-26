@@ -45,4 +45,62 @@ const getCourseById = async (req, res) => {
             res.status(500).json({ error: error.message });
       }
 }
-module.exports = { createCourse, getCourse, getCourseById }
+
+const updateCourseById = async (req, res) => {
+    try {
+        const courseId = req.params.id;
+        const updates = req.body;
+
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        // Check if the logged-in user is the mentor of the course
+        if (course.mentor.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this course' });
+        }
+
+        // Update the course document
+        Object.assign(course, updates);
+
+        // Increment the version manually
+        course.__v += 1;
+
+        const updatedCourse = await course.save(); // This will trigger the versioning middleware
+
+        res.status(200).json(updatedCourse);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};  
+
+const deleteCourseById = async (req, res) => {
+    try {
+        const courseId = req.params.id;
+
+        const course = await Course.findById(courseId);
+
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        // Check if the logged-in user is the mentor of the course
+        if (course.mentor.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this course' });
+        }
+
+        const deletedCourse = await Course.findByIdAndDelete(courseId);
+
+        if (!deletedCourse) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        res.status(200).json({ message: 'Course deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { createCourse, getCourse, getCourseById, updateCourseById, deleteCourseById };
