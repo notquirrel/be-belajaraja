@@ -27,7 +27,7 @@ const createCourse = async (req, res) => {
 }
 const getCourse = async (req, res) => {
       try {
-            const courses = await Course.find({}); // Find all courses (empty filter)
+            const courses = await Course.find({}).populate('mentor');; // Find all courses (empty filter)
 
             if (courses.length === 0) { // Check if any courses were found
                   return res.status(404).json({ error: 'No courses found' });
