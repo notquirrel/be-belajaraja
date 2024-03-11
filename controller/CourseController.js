@@ -1,15 +1,19 @@
 const Course = require('../models/CoursesSchema')
 
 const createCourse = async (req, res) => {
-      const { title, description, content, price, mentor } = req.body
+      const { title, description, price, mentor } = req.body
+      const cover = req.file.path;
 
       try {
+            if (!req.file) {
+                  return res.status(400).json({ error: 'No file uploaded' });
+            }
             const newCourse = new Course({
                   title,
                   description,
-                  content,
                   price,
-                  mentor
+                  mentor,
+                  cover
             });
             const savedCourse = await newCourse.save()
             res.status(201).json(savedCourse)

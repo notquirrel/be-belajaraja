@@ -11,9 +11,9 @@ const CoursesSchema = new Schema({
             type: String,
             required: true
       },
-      content: {
+      cover: {
             type: String,
-            required: true
+            required: true,
       },
       price: {
             type: Number,
@@ -24,9 +24,22 @@ const CoursesSchema = new Schema({
       mentor: {
             type: Schema.Types.ObjectId,
             ref: 'User'
+      },
+      created_at: {
+            type: Date,
+            default: Date.now
+      },
+      updated_at: {
+            type: Date,
+            default: Date.now
       }
-
 })
+
+CoursesSchema.pre('save', function(next) {
+      this.updated_at = new Date();
+      next();
+});
+
 const Course = mongoose.model('Course', CoursesSchema);
 
 module.exports = Course;
