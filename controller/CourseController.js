@@ -43,13 +43,13 @@ const getCourseById = async (req, res) => {
       try {
           const courseId = req.params.id;
   
-          const course = await Course.findById(courseId);
+          const course = await Course.findById(courseId).populate('mentor');;
           if (!course) {
               return res.status(404).json({ error: 'Course not found' });
           }
   
           // Construct the image URL based on the relative path stored in the cover field
-          const imageUrl = `${req.protocol}://${req.get('host')}/${course.cover}`;
+          const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${course.cover}`;
   
           // Add the image URL to the course object
           const courseWithImageUrl = { ...course.toJSON(), imageUrl };
