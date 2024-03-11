@@ -1,19 +1,23 @@
 const Course = require('../models/CoursesSchema')
+const path = require('path');
 
 const createCourse = async (req, res) => {
       const { title, description, price, mentor } = req.body
-      const cover = req.file.path;
 
       try {
             if (!req.file) {
                   return res.status(400).json({ error: 'No file uploaded' });
             }
+
+            const cover = req.file.path;
+            const fileName = path.basename(cover);
+
             const newCourse = new Course({
                   title,
                   description,
                   price,
                   mentor,
-                  cover
+                  cover: fileName
             });
             const savedCourse = await newCourse.save()
             res.status(201).json(savedCourse)
@@ -37,18 +41,25 @@ const getCourse = async (req, res) => {
 
 const getCourseById = async (req, res) => {
       try {
-            const courseId = req.params.id;
-
-            const course = await Course.findById(courseId);
-            if (!course) {
-                  return res.status(404).json({ error: 'Course not found' });
-            }
-
-            res.status(200).json(course);
+          const courseId = req.params.id;
+  
+          const course = await Course.findById(courseId);
+          if (!course) {
+              return res.status(404).json({ error: 'Course not found' });
+          }
+  
+          // Construct the image URL based on the relative path stored in the cover field
+          const imageUrl = `${req.protocol}://${req.get('host')}/${course.cover}`;
+  
+          // Add the image URL to the course object
+          const courseWithImageUrl = { ...course.toJSON(), imageUrl };
+  
+          res.status(200).json(courseWithImageUrl);
       } catch (error) {
-            res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message });
       }
-}
+  };
+  
 
 const updateCourseById = async (req, res) => {
     try {
