@@ -1,23 +1,20 @@
-const Course = require('../models/CoursesSchema')
-const path = require('path');
+const Course = require('../models/CoursesSchema');
+const { uploadToCloudinary, removeFromCloudinary } = require('../services/cloudinary');
 
 const createCourse = async (req, res) => {
       const { title, description, price, mentor } = req.body
 
       try {
-            if (!req.file) {
-                  return res.status(400).json({ error: 'No file uploaded' });
-            }
-
-            const cover = req.file.path;
-            const fileName = path.basename(cover);
+            // Upload image to Cloudinary
+            const data = await uploadToCloudinary(req.file.path, "course-images");
 
             const newCourse = new Course({
                   title,
                   description,
                   price,
                   mentor,
-                  cover: fileName
+                  cover: data.url,
+                  publicId: data.public_id
             });
             const savedCourse = await newCourse.save()
             res.status(201).json(savedCourse)
@@ -39,6 +36,24 @@ const getCourse = async (req, res) => {
       }
 };
 
+const getCourseByMentor = async (req, res) => {
+    try {
+        // Get the ID of the current logged-in user
+        const mentorId = req.user._id;
+
+        // Find all courses where the mentor field matches the mentorId
+        const courses = await Course.find({ mentor: mentorId });
+
+        if (courses.length === 0) {
+            return res.status(404).json({ error: 'No courses found for this mentor' });
+        }
+
+        res.status(200).json(courses);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getCourseById = async (req, res) => {
       try {
           const courseId = req.params.id;
@@ -48,18 +63,11 @@ const getCourseById = async (req, res) => {
               return res.status(404).json({ error: 'Course not found' });
           }
   
-          // Construct the image URL based on the relative path stored in the cover field
-          const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${course.cover}`;
-  
-          // Add the image URL to the course object
-          const courseWithImageUrl = { ...course.toJSON(), imageUrl };
-  
-          res.status(200).json(courseWithImageUrl);
+          res.status(200).json(course);
       } catch (error) {
           res.status(500).json({ error: error.message });
       }
   };
-  
 
 const updateCourseById = async (req, res) => {
     try {
@@ -77,8 +85,31 @@ const updateCourseById = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this course' });
         }
 
+        // Check if a new image file was uploaded
+        let data;
+        if (req.file) {
+            // Find the publicId
+            const publicId = course.publicId;
+
+            // Remove from Cloudinary
+            await removeFromCloudinary(publicId);
+
+            // Upload new image to Cloudinary
+            data = await uploadToCloudinary(req.file.path, "course-images");
+        }
+
         // Update the course document
-        Object.assign(course, updates);
+        if (data) {
+            // If a new image was uploaded, update cover and publicId
+            course.set({
+                ...updates,
+                cover: data.url,
+                publicId: data.public_id
+            });
+        } else {
+            // If no new image, update other fields only
+            course.set(updates);
+        }
 
         // Increment the version manually
         course.__v += 1;
@@ -94,7 +125,6 @@ const updateCourseById = async (req, res) => {
 const deleteCourseById = async (req, res) => {
     try {
         const courseId = req.params.id;
-
         const course = await Course.findById(courseId);
 
         if (!course) {
@@ -106,6 +136,13 @@ const deleteCourseById = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this course' });
         }
 
+        // Find the publicId
+        const publicId = course.publicId;
+
+        // Remove from Cloudinary
+        await removeFromCloudinary(publicId);
+
+        // Remove from Database
         const deletedCourse = await Course.findByIdAndDelete(courseId);
 
         if (!deletedCourse) {
@@ -118,4 +155,4 @@ const deleteCourseById = async (req, res) => {
     }
 };
 
-module.exports = { createCourse, getCourse, getCourseById, updateCourseById, deleteCourseById };
+module.exports = { createCourse, getCourse, getCourseByMentor, getCourseById, updateCourseById, deleteCourseById };

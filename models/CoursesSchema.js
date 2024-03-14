@@ -15,6 +15,10 @@ const CoursesSchema = new Schema({
             type: String,
             required: true,
       },
+      publicId: {
+            type: String,
+            required: true,
+      },
       price: {
             type: Number,
             min: 0,
