@@ -2,7 +2,10 @@ const Course = require('../models/CoursesSchema');
 const { uploadToCloudinary, removeFromCloudinary } = require('../services/cloudinary');
 
 const createCourse = async (req, res) => {
-      const { title, description, price, mentor } = req.body
+      const { title, description, price } = req.body
+
+      // Get the ID of the current logged-in user
+      const mentor = req.user._id;
 
       try {
             // Upload image to Cloudinary
