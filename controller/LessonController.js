@@ -66,7 +66,14 @@ const getLessonByCourseId = async (req, res) => {
         const courseid = req.params.courseid; // Assuming the course ID is passed as a parameter in the URL
 
         // Find all lessons that belong to the specified course
-        const lessons = await Lesson.find({ course_id: courseid });
+        const lessons = await Lesson.find({ course_id: courseid })
+            .populate('course_id') // Populate the course_id field
+            .populate({
+                path: 'course_id',
+                populate: {
+                    path: 'mentor', // Populate the mentor field inside the course_id
+                },
+            });
 
         // Check if any lessons were found
         if (lessons.length === 0) {
