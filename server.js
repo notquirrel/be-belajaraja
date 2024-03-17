@@ -25,11 +25,13 @@ const UserRouter = require('./routes/UserRouter')
 const CourseRouter = require('./routes/CourseRouter')
 const LessonRouter = require('./routes/LessonRouter')
 const QuizRouter = require('./routes/QuizRouter')
+const AnswerRouter = require('./routes/AnswerRouter')
 
 app.use('/api/user', UserRouter)
 app.use('/api/course', CourseRouter)
 app.use('/api/lesson', LessonRouter)
 app.use('/api/quiz', QuizRouter)
+app.use('/api/answer', AnswerRouter)
 
 app.listen(4000, () => {
       console.log("successfully connected")

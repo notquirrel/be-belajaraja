@@ -1,26 +1,19 @@
 const mongoose = require('mongoose')
-const Courses = require('./CoursesSchema')
+const Quizzes = require('./QuizzesSchema')
 const { Schema } = mongoose
 
-const LessonsSchema = new Schema({
-    course_id: {
+const AnswersSchema = new Schema({
+    quiz_id: {
         type: Schema.Types.ObjectId,
-        ref: 'Course'
+        ref: 'Quiz'
     },
-    title: {
-        type: String,
-        required: true,
-    },
-    description: {
+    content: {
         type: String,
         required: true
     },
-    video_url: {
+    type: {
         type: String,
-        required: true
-    },
-    sequence: {
-        type: Number,
+        enum: ['A', 'B', 'C'],
         required: true
     },
     created_at: {
@@ -33,11 +26,11 @@ const LessonsSchema = new Schema({
     }
 })
 
-LessonsSchema.pre('save', function(next) {
+AnswersSchema.pre('save', function(next) {
       this.updated_at = new Date();
       next();
 });
 
-const Lesson = mongoose.model('Lesson', LessonsSchema);
+const Answer = mongoose.model('Answer', AnswersSchema);
 
-module.exports = Lesson;
+module.exports = Answer;

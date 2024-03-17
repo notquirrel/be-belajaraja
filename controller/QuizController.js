@@ -18,7 +18,17 @@ const createQuiz = async (req, res) => {
 }
 const getQuiz = async (req, res) => {
       try {
-            const quizzes = await Quiz.find({}); // Find all quizzes (empty filter)
+            const quizzes = await Quiz.find({})
+                .populate('lesson_id') // Populate the lesson_id field
+                .populate({
+                    path: 'lesson_id',
+                    populate: {
+                        path: 'course_id',
+                        populate: {
+                            path: 'mentor'
+                        }
+                    }
+                });
 
             if (quizzes.length === 0) { // Check if any quizzes were found
                   return res.status(404).json({ error: 'No quizzes found' });
@@ -34,7 +44,18 @@ const getQuizById = async (req, res) => {
       try {
             const quizId = req.params.id;
 
-            const quiz = await Quiz.findById(quizId);
+            const quiz = await Quiz.findById(quizId)
+                .populate('lesson_id') // Populate the lesson_id field
+                .populate({
+                    path: 'lesson_id',
+                    populate: {
+                        path: 'course_id',
+                        populate: {
+                            path: 'mentor'
+                        }
+                    }
+                });
+                
             if (!quiz) {
                   return res.status(404).json({ error: 'Quiz not found' });
             }

@@ -5,7 +5,7 @@ const { Schema } = mongoose
 const QuizzesSchema = new Schema({
     lesson_id: {
         type: Schema.Types.ObjectId,
-        ref: 'Lessons'
+        ref: 'Lesson'
     },
     title: {
         type: String,
@@ -18,6 +18,10 @@ const QuizzesSchema = new Schema({
     correct_answer: {
         type: String,
         enum: ['A', 'B', 'C'],
+        required: true
+    },
+    sequence: {
+        type: Number,
         required: true
     },
     created_at: {

@@ -19,7 +19,14 @@ const createLesson = async (req, res) => {
 }
 const getLesson = async (req, res) => {
       try {
-            const lessons = await Lesson.find({}); // Find all lessons (empty filter)
+            const lessons = await Lesson.find({})
+                .populate('course_id') // Populate the course_id field
+                .populate({
+                    path: 'course_id',
+                    populate: {
+                        path: 'mentor', // Populate the mentor field inside the course_id
+                    },
+                });
 
             if (lessons.length === 0) { // Check if any lessons were found
                   return res.status(404).json({ error: 'No lessons found' });
@@ -35,7 +42,15 @@ const getLessonById = async (req, res) => {
       try {
             const lessonId = req.params.id;
 
-            const lesson = await Lesson.findById(lessonId);
+            const lesson = await Lesson.findById(lessonId)
+            .populate('course_id') // Populate the course_id field
+            .populate({
+                path: 'course_id',
+                populate: {
+                    path: 'mentor', // Populate the mentor field inside the course_id
+                },
+            });
+            
             if (!lesson) {
                   return res.status(404).json({ error: 'Lesson not found' });
             }
