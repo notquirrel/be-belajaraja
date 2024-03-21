@@ -122,14 +122,17 @@ const deleteLessonById = async (req, res) => {
     try {
         const lessonId = req.params.id;
 
-        const lesson = await Lesson.findById(lessonId);
+        const lesson = await Lesson.findById(lessonId).populate('course_id');
 
         if (!lesson) {
             return res.status(404).json({ error: 'Lesson not found' });
         }
 
+        // Extract the mentor ID from the associated course
+        const mentorId = lesson.course_id.mentor;
+
         // Check if the logged-in user is the mentor of the lesson
-        if (lesson.mentor.toString() !== req.user._id.toString()) {
+        if (mentorId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this lesson' });
         }
 
