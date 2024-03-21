@@ -71,7 +71,17 @@ const getQuizByLessonId = async (req, res) => {
         const lessonid = req.params.lessonid; // Assuming the lesson ID is passed as a parameter in the URL
 
         // Find all quizzes that belong to the specified lesson
-        const quizzes = await Quiz.find({ lesson_id: lessonid });
+        const quizzes = await Quiz.find({ lesson_id: lessonid })
+            .populate('lesson_id') // Populate the lesson_id field
+            .populate({
+                path: 'lesson_id',
+                populate: {
+                    path: 'course_id',
+                    populate: {
+                        path: 'mentor'
+                    }
+                }
+            });
 
         // Check if any quizzes were found
         if (quizzes.length === 0) {
@@ -91,14 +101,24 @@ const updateQuizById = async (req, res) => {
         const quizId = req.params.id;
         const updates = req.body;
 
-        const quiz = await Quiz.findById(quizId);
+        const quiz = await Quiz.findById(quizId)
+            .populate('lesson_id')
+            .populate({
+                path: 'lesson_id',
+                populate: {
+                    path: 'course_id',
+                }
+            });
 
         if (!quiz) {
             return res.status(404).json({ error: 'Quiz not found' });
         }
 
+        // Extract the mentor ID from the associated course
+        const mentorId = quiz.course_id.mentor;
+
         // Check if the logged-in user is the mentor of the quiz
-        if (quiz.mentor.toString() !== req.user._id.toString()) {
+        if (mentorId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this quiz' });
         }
 
@@ -120,14 +140,24 @@ const deleteQuizById = async (req, res) => {
     try {
         const quizId = req.params.id;
 
-        const quiz = await Quiz.findById(quizId);
+        const quiz = await Quiz.findById(quizId)
+            .populate('lesson_id')
+            .populate({
+                path: 'lesson_id',
+                populate: {
+                    path: 'course_id',
+                }
+            });
 
         if (!quiz) {
             return res.status(404).json({ error: 'Quiz not found' });
         }
 
+        // Extract the mentor ID from the associated course
+        const mentorId = quiz.course_id.mentor;
+
         // Check if the logged-in user is the mentor of the quiz
-        if (quiz.mentor.toString() !== req.user._id.toString()) {
+        if (mentorId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this quiz' });
         }
 

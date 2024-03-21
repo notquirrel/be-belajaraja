@@ -17,7 +17,20 @@ const createAnswer = async (req, res) => {
 }
 const getAnswer = async (req, res) => {
       try {
-            const answers = await Answer.find({}); // Find all answers (empty filter)
+            const answers = await Answer.find({})
+                .populate('quiz_id') // Populate the quiz_id field
+                .populate({
+                    path: 'quiz_id',
+                    populate: {
+                        path: 'lesson_id',
+                        populate: {
+                            path: 'course_id',
+                            populate: {
+                                path: 'mentor'
+                            }
+                        }
+                    }
+                });
 
             if (answers.length === 0) { // Check if any answers were found
                   return res.status(404).json({ error: 'No answers found' });
@@ -33,7 +46,21 @@ const getAnswerById = async (req, res) => {
       try {
             const quizId = req.params.id;
 
-            const quiz = await Answer.findById(quizId);
+            const quiz = await Answer.findById(quizId)
+                .populate('quiz_id') // Populate the quiz_id field
+                .populate({
+                    path: 'quiz_id',
+                    populate: {
+                        path: 'lesson_id',
+                        populate: {
+                            path: 'course_id',
+                            populate: {
+                                path: 'mentor'
+                            }
+                        }
+                    }
+                });
+
             if (!quiz) {
                   return res.status(404).json({ error: 'Answer not found' });
             }
@@ -49,7 +76,20 @@ const getAnswerByQuizId = async (req, res) => {
         const quizid = req.params.quizid; // Assuming the quiz ID is passed as a parameter in the URL
 
         // Find all answers that belong to the specified quiz
-        const answers = await Answer.find({ quiz_id: quizid });
+        const answers = await Answer.find({ quiz_id: quizid })
+            .populate('quiz_id') // Populate the quiz_id field
+            .populate({
+                path: 'quiz_id',
+                populate: {
+                    path: 'lesson_id',
+                    populate: {
+                        path: 'course_id',
+                        populate: {
+                            path: 'mentor'
+                        }
+                    }
+                }
+            });
 
         // Check if any answers were found
         if (answers.length === 0) {
@@ -69,14 +109,27 @@ const updateAnswerById = async (req, res) => {
         const answerId = req.params.id;
         const updates = req.body;
 
-        const answer = await Answer.findById(answerId);
+        const answer = await Answer.findById(answerId)
+            .populate('quiz_id') // Populate the quiz_id field
+            .populate({
+                path: 'quiz_id',
+                populate: {
+                    path: 'lesson_id',
+                    populate: {
+                        path: 'course_id',
+                    }
+                }
+            });
 
         if (!answer) {
             return res.status(404).json({ error: 'Answer not found' });
         }
 
+        // Extract the mentor ID from the associated course
+        const mentorId = answer.course_id.mentor;
+
         // Check if the logged-in user is the mentor of the answer
-        if (answer.quiz_id.course_id.mentor.toString() !== req.user._id.toString()) {
+        if (mentorId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this answer' });
         }
 
@@ -98,14 +151,27 @@ const deleteAnswerById = async (req, res) => {
     try {
         const answerId = req.params.id;
 
-        const answer = await Answer.findById(answerId);
+        const answer = await Answer.findById(answerId)
+            .populate('quiz_id') // Populate the quiz_id field
+            .populate({
+                path: 'quiz_id',
+                populate: {
+                    path: 'lesson_id',
+                    populate: {
+                        path: 'course_id',
+                    }
+                }
+            });
 
         if (!answer) {
             return res.status(404).json({ error: 'Answer not found' });
         }
 
+        // Extract the mentor ID from the associated course
+        const mentorId = answer.course_id.mentor;
+
         // Check if the logged-in user is the mentor of the answer
-        if (answer.quiz_id.course_id.mentor.toString() !== req.user._id.toString()) {
+        if (mentorId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ error: 'Unauthorized: You are not the mentor of this answer' });
         }
 
